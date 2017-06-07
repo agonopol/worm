@@ -1,0 +1,4 @@
+[submodule "lib/condense"]
+	path = lib/condense
+	url = git@github.com:agonopol/condense.git
+	branch = cleanup
