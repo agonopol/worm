@@ -2,3 +2,6 @@
 	path = lib/condense
 	url = git@github.com:agonopol/condense.git
 	branch = cleanup
+[submodule "lib/sanky"]
+	path = lib/sanky
+	url = git@github.com:agonopol/msanky.git

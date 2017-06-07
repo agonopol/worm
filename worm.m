@@ -35,10 +35,7 @@ for file = files'
     contractor = ContractionClustering(matrix, cellstr(neurons), options);
     contractor = contractor.contract();
     
-    break;
-    
     f = fopen(strcat(options.asString(), '_assigments.csv'), 'w');
-    
     fprintf(f, join(string(neurons'), ','));
     fprintf(f, '\n');
     flipped = flip(contractor.clusterAssignments);
