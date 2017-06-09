@@ -35,7 +35,7 @@ for file = files'
     contractor = ContractionClustering(matrix, cellstr(neurons), options);
     contractor = contractor.contract();
     
-    f = fopen(strcat(options.asString(), '_assigments.csv'), 'w');
+    f = fopen(strcat(options.destination, 'cluster_assigments.csv'), 'w');
     fprintf(f, join(string(neurons'), ','));
     fprintf(f, '\n');
     flipped = flip(contractor.clusterAssignments);
@@ -46,7 +46,11 @@ for file = files'
     end
     fclose(f);
 
-    sanky(contractor.clusterAssignments, neurons, strcat(options.asString(), '_sanky.html'));
+    for i = 0:4
+        target = strcat(options.destination, 'step-', string(contractor.iteration - i), '-sanky.html');
+        sanky(contractor.clusterAssignments(1:end-i, :), neurons, target);
+    end
+  
     clc;
     close all force;
     close all hidden;
