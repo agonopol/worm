@@ -35,25 +35,37 @@ for file = files'
     contractor = ContractionClustering(matrix, cellstr(neurons), options);
     contractor = contractor.contract();
     
-    f = fopen(strcat(options.destination, 'cluster_assigments.csv'), 'w');
-    fprintf(f, join(["type", string(neurons')], ','));
-    fprintf(f, '\n');
     flipped = flip(contractor.clusterAssignments);
 
+    % Write out cluster assigments
+    
+    f = fopen(strcat(options.destination, 'cluster_assigments.csv'), 'w');
+    fprintf(f, join(string(neurons'), ','));
+    fprintf(f, '\n');
+
     for i = 1:min(size(contractor.clusterAssignments))
-        fprintf(f, 'assigment,');
         fprintf(f, join(string(flipped(i,:)), ','));
-        fprintf(f, '\n');
-        fprintf(f, 'centrality,');
-        fprintf(f, join(string(centrality(matrix, flipped(i,:))), ','));
         fprintf(f, '\n');
     end
     fclose(f);
 
+    % Write out cluster centrality analysis
+    
+    f = fopen(strcat(options.destination, 'cluster_centrality.csv'), 'w');
+    fprintf(f, join(string(neurons'), ','));
+    fprintf(f, '\n');
+    
+    
+    for i = 1:min(size(contractor.clusterAssignments))
+        fprintf(f, join(string(centrality(adj, flipped(i,:))), ','));
+        fprintf(f, '\n');
+    end        
+    fclose(f);
+
+    % Write out sanky for the last 4 iterations
     for i = 0:4
         target = strcat(options.destination, 'step-', string(contractor.iteration - i), '-sanky.html');
         sanky(contractor.clusterAssignments(1:end-i, :), neurons, target);
-        mkdir_if_not_exists(strcat(options.destination, 'centrality'));
     end
   
     clc;
