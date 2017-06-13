@@ -20,15 +20,15 @@ files = dir('data/*.csv');
 
 for file = files'
     path = fullfile(file.folder, file.name);
-    data = readworm(path);
-    [neurons, data] = weightedadj(data);
+    adj = readworm(path);
+    [neurons, adj] = weightedadj(adj);
     
     [~, name, ~] = fileparts(path);
     options.destination = fullfile(pwd(), 'results', name, '//');
     [dest, ~, ~] = fileparts(options.destination);
     mkdir_if_not_exists(dest);
     
-    markov = rownorm(data);
+    markov = rownorm(adj);
     [V,D] = eig(markov);
     matrix = bsxfun(@times,V(:,1:50)',diag(D(1:50, :)))';
     
@@ -36,12 +36,16 @@ for file = files'
     contractor = contractor.contract();
     
     f = fopen(strcat(options.destination, 'cluster_assigments.csv'), 'w');
-    fprintf(f, join(string(neurons'), ','));
+    fprintf(f, join(["type", string(neurons')], ','));
     fprintf(f, '\n');
     flipped = flip(contractor.clusterAssignments);
 
     for i = 1:min(size(contractor.clusterAssignments))
+        fprintf(f, 'assigment,');
         fprintf(f, join(string(flipped(i,:)), ','));
+        fprintf(f, '\n');
+        fprintf(f, 'centrality,');
+        fprintf(f, join(string(centrality(matrix, flipped(i,:))), ','));
         fprintf(f, '\n');
     end
     fclose(f);
@@ -49,6 +53,7 @@ for file = files'
     for i = 0:4
         target = strcat(options.destination, 'step-', string(contractor.iteration - i), '-sanky.html');
         sanky(contractor.clusterAssignments(1:end-i, :), neurons, target);
+        mkdir_if_not_exists(strcat(options.destination, 'centrality'));
     end
   
     clc;
