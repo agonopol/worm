@@ -17,8 +17,8 @@ options.phateEmbedding = false;
 
 files = dir('data/*.csv');
 
-
 for file = files'
+    
     path = fullfile(file.folder, file.name);
     adj = readworm(path);
     [neurons, adj] = weightedadj(adj);
@@ -32,6 +32,10 @@ for file = files'
     [V,D] = eig(markov);
     matrix = bsxfun(@times,V(:,1:50)',diag(D(1:50, :)))';
     
+    
+    options.sizefn = @(clusters, labels) centrality(adj, clusters)';
+    options.labelfn = @(clusters, labels) label(labels, centrality(adj, clusters)');
+
     contractor = ContractionClustering(matrix, cellstr(neurons), options);
     contractor = contractor.contract();
     
@@ -67,8 +71,9 @@ for file = files'
         target = strcat(options.destination, 'step-', string(contractor.iteration - i), '-sanky.html');
         sanky(contractor.clusterAssignments(1:end-i, :), neurons, target);
     end
-  
+    
     clc;
     close all force;
     close all hidden;
+      
 end

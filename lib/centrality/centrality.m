@@ -2,7 +2,7 @@ function scores = centrality(data, clusters)
     analysis = analize(data, [1:length(clusters); clusters]');
     analysis = cellfun(@(x) x(:, [1,3])', analysis, 'UniformOutput', false);
     analysis = sort([analysis{:}],2);
-    scores = analysis(1,:)
+    scores = analysis(1,:);
 end
 
 function Clus = analize(ADJ, A)
