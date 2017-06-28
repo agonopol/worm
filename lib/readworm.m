@@ -19,17 +19,14 @@ end
 
 fclose(fileID);
 
-raw = repmat({''},length(dataArray{1}),length(dataArray)-1);
-for col=1:length(dataArray)-1
+raw = repmat({''},length(dataArray{1}),length(dataArray));
+for col=1:length(dataArray)
     raw(1:length(dataArray{col}),col) = mat2cell(dataArray{col}, ones(length(dataArray{col}), 1));
 end
 numericData = NaN(size(dataArray{1},1),size(dataArray,2));
 
-rawNumericColumns = {};
+rawNumericColumns = str2double(raw(:, 4));
 rawStringColumns = string(raw(:, [1,2,3]));
-
-R = cellfun(@(x) ~isnumeric(x) && ~islogical(x),rawNumericColumns); % Find non-numeric cells
-rawNumericColumns(R) = {NaN}; % Replace non-numeric cells
 
 for catIdx = [1,2]
     idx = (rawStringColumns(:, catIdx) == "<undefined>");
@@ -40,4 +37,5 @@ adjacency = table;
 adjacency.Neuron1 = categorical(rawStringColumns(:, 1));
 adjacency.Neuron2 = categorical(rawStringColumns(:, 2));
 adjacency.EMSection = rawStringColumns(:, 3);
+adjacency.Weight = rawNumericColumns(:, 1);
 

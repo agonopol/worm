@@ -8,7 +8,12 @@ function [neurons, transformed] = adjency(data)
         for n = 1:height(section)
             n1 = find(neurons == section(n, 'Neuron1').Neuron1);
             n2 = find(neurons == section(n, 'Neuron2').Neuron2);
-            transformed(n1+offset, n2) = 1;
+            weight = section(n, 'Weight');
+            if isnan(weight)
+                transformed(n1+offset, n2) = 1;
+            else
+                transformed(n1+offset, n2) = weight;
+            end
         end
     end
 end
