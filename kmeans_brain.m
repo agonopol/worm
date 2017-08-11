@@ -11,15 +11,15 @@ options.epsilonClusterIdentificationMethod = 'constantEpsilon';
 options.frequencyMergingEpsilonClusters = 'always'; %always,uponMetastability%
 options.controlSigmaMethod = 'nuclearNormStabilization'; %nuclearNormStabilization,movementStabilization
 options.numDiffusionSteps = 3;
+options.fastStop = true;
+options.maxClusters = 7;
 options.phateEmbedding = false;
 
-files = dir('data/*.csv');
+files = dir('data/*Final.csv');
 
 jsh = arrayfun(@(x) sprintf('JSH%03d', x), 1:282, 'UniformOutput', false);
 n2u = [arrayfun(@(x) sprintf('N2U_%03d', x), 2:182, 'UniformOutput', false) ...
        arrayfun(@(x) sprintf('N2U_VC_%03d', x), 1:34, 'UniformOutput', false) ];
-
-worms = containers.Map();
 
 for file = files'
     
@@ -39,8 +39,20 @@ for file = files'
     [dest, ~, ~] = fileparts(options.destination);
     mkdir_if_not_exists(dest);
     
-    worms(path) = cluster(adj, neurons, options);
+    markov = rownorm(adj);
+    [V,D] = eig(markov);
+    matrix = bsxfun(@times,V(:,1:50)',diag(D(1:50, :)))';
     
+    assigments = kmeans(matrix, 15);
+    f = fopen(strcat(options.destination, 'k-means_cluster_assigments.csv'), 'w');
+    fprintf(f, join(string(neurons'), ','));
+    fprintf(f, '\n');
+    
+    fprintf(f, join(string(assigments), ','));
+    fprintf(f, '\n');
+    fclose(f);
+    
+    clc;
     close all force;
     close all hidden;
       

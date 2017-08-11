@@ -43,5 +43,4 @@ function contracted = cluster(adj, neurons, options)
         sanky(contracted.clusterAssignments(1:end-i, :), neurons, target);
     end
     
-    
 end
