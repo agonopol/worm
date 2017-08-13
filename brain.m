@@ -39,7 +39,7 @@ for file = files'
     [dest, ~, ~] = fileparts(options.destination);
     mkdir_if_not_exists(dest);
     
-    worms(path) = cluster(adj, neurons, options);
+    worms(path) = condense(adj, neurons, options);
     
     close all force;
     close all hidden;

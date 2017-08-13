@@ -1,4 +1,4 @@
-function contracted = cluster(adj, neurons, options)
+function contracted = condense(adj, neurons, options)
 
     markov = rownorm(adj);
     [V,D] = eig(markov);
@@ -43,4 +43,9 @@ function contracted = cluster(adj, neurons, options)
         sanky(contracted.clusterAssignments(1:end-i, :), neurons, target);
     end
     
+    plot_quality(adj, 'modularity', ...
+            'output', strcat(contracted.options.destination, 'kmeans-comparison.png'), ...
+            'condensation', contracted.clusterAssignments, ... 
+            'k-means', kmeanscompare(adj, contracted.clusterAssignments), ...
+            'agglomerative', hierarchicalcompare(adj, contracted.clusterAssignments));
 end
