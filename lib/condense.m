@@ -1,4 +1,4 @@
-function contracted = condense(adj, neurons, options)
+function condensed = condense(adj, neurons, options)
 
     markov = rownorm(adj);
     [V,D] = eig(markov);
@@ -9,8 +9,8 @@ function contracted = condense(adj, neurons, options)
     options.labelfn = @(clusters, labels) label(labels, centrality(adj, clusters)');
     options.plotfn = @plotworm;
 
-    contractor = ContractionClustering(matrix, cellstr(neurons), options);
-    contracted = contractor.contract();
+    condenser = ContractionClustering(matrix, cellstr(neurons), options);
+    condensed = condenser.contract();
     
     % Write out cluster assigments
     
@@ -18,8 +18,8 @@ function contracted = condense(adj, neurons, options)
     fprintf(f, join(string(neurons'), ','));
     fprintf(f, '\n');
 
-    for i = 1:min(size(contracted.clusterAssignments))
-        fprintf(f, join(string(contracted.clusterAssignments(i,:)), ','));
+    for i = 1:min(size(condensed.clusterAssignments))
+        fprintf(f, join(string(condensed.clusterAssignments(i,:)), ','));
         fprintf(f, '\n');
     end
     fclose(f);
@@ -31,21 +31,51 @@ function contracted = condense(adj, neurons, options)
     fprintf(f, '\n');
     
     
-    for i = 1:min(size(contracted.clusterAssignments))
-        fprintf(f, join(string(centrality(adj, contracted.clusterAssignments(i,:))), ','));
+    for i = 1:min(size(condensed.clusterAssignments))
+        fprintf(f, join(string(centrality(adj, condensed.clusterAssignments(i,:))), ','));
         fprintf(f, '\n');
     end        
     fclose(f);
 
     % Write out sanky for the last 4 iterations
-    for i = 0:4
-        target = strcat(options.destination, 'step-', string(contracted.iteration - i), '-sanky.html');
-        sanky(contracted.clusterAssignments(1:end-i, :), neurons, target);
+    scores = zeros(size(condensed.clusterAssignments));
+    data = condensed.contractionSequence(:, :, 1);
+
+    for i = 1:size(condensed.clusterAssignments, 1)
+        [~, Q] = affmodularity(data, condensed.clusterAssignments(i, :));
+        scores(i, :) = Q;
     end
     
-    plot_quality(adj, 'modularity', ...
-            'output', strcat(contracted.options.destination, 'kmeans-comparison.png'), ...
-            'condensation', contracted.clusterAssignments, ... 
-            'k-means', kmeanscompare(adj, contracted.clusterAssignments), ...
-            'agglomerative', hierarchicalcompare(adj, contracted.clusterAssignments));
+    for i = 0:4
+        target = strcat(options.destination, 'step-', string(condensed.iteration - i), '-sanky.html');
+        sanky(condensed.clusterAssignments(1:end-i, :), neurons, target, scores(1:end-i, :));
+    end
+    
+    quality(adj, 'modularity', ...
+            'maxk', 50, ...
+            'output', strcat(condensed.options.destination, 'modularity-comparison.png'), ...
+            'condensation', condensed.clusterAssignments, ... 
+            'k-means', kmeanscompare(adj, condensed.clusterAssignments), ...
+            'agglomerative', hierarchicalcompare(adj, condensed.clusterAssignments));
+    
+    quality(data, 'CalinskiHarabasz', ...
+        'maxk', 50, ...
+        'output', strcat(condensed.options.destination, 'CalinskiHarabasz-comparison.png'), ...
+        'condensation', condensed.clusterAssignments, ... 
+        'k-means', kmeanscompare(adj, condensed.clusterAssignments), ...
+        'agglomerative', hierarchicalcompare(adj, condensed.clusterAssignments));
+    
+    quality(data, 'DaviesBouldin', ...
+        'maxk', 50, ...
+        'output', strcat(condensed.options.destination, 'DaviesBouldin-comparison.png'), ...
+        'condensation', condensed.clusterAssignments, ... 
+        'k-means', kmeanscompare(adj, condensed.clusterAssignments), ...
+        'agglomerative', hierarchicalcompare(adj, condensed.clusterAssignments));
+    
+        quality(data, 'Silhouette', ...
+        'maxk', 50, ...
+        'output', strcat(condensed.options.destination, 'Silhouette-comparison.png'), ...
+        'condensation', condensed.clusterAssignments, ... 
+        'k-means', kmeanscompare(adj, condensed.clusterAssignments), ...
+        'agglomerative', hierarchicalcompare(adj, condensed.clusterAssignments));
 end
